@@ -26,11 +26,9 @@
             // true if any of the spots has more than 1 placements
             var historyEnabled = _.findIndex(this.radar.spots, function(sp) { return _.size(sp.placements) > 1; }) !== -1;
 
-            var extraSpacing = 20; //Extra spacing on the right for texts in tooltip
-
             var canvas = d3.select("#radar") //
                 .append('svg')              // add a svg-container in order to draw some shapes
-                .attr("width", (radius * _.size(this.radar.arcs)) * 2 + (offset * 2)+extraSpacing)
+                .attr("width", (radius * _.size(this.radar.arcs)) * 2 + (offset * 2))
                 .attr("height", (radius * _.size(this.radar.arcs)) * 2 + (offset * 2));
 
             var group = canvas.append("g").attr("transform", "translate(" + center.x + "," + center.y + ")");
@@ -66,7 +64,7 @@
                 createRadarSpots(enterElement, quadrant);
 
                 // write a head-line per quadrant
-                createListHeadline(quadrant, (quadrantIndex < 2) ? 0 : 1);
+                createListHeadline(quadrant);
                 createSpotLabelAndListElements(enterElement, quadrant);
             }, this);
 
@@ -218,13 +216,22 @@
                 return _.camelCase(value);
             }
 
-            function createListHeadline(quadrant, index) {
-                d3.select("#items" + index)
-                    .append("p")
+            function createListHeadline(quadrant) {
+
+                var quadrantId = asId(quadrant.title);
+                var headline = d3.select("#items").append("p");
+
+                headline.append("h3")
                     .text(quadrant.title)
-                    .attr('class', 'headline')
-                    .append('ul')
-                    .attr("id", asId(quadrant.title));
+                    .classed('headline', true)
+                    .style("border-bottom-color", quadrant.spotColor)
+                    .on('click', function () {
+                        showQuadrantElements(quadrantId);
+                    });
+
+                headline.append('ul')
+                    .attr("id", quadrantId);
+
             }
 
             function createSpotLabelAndListElements(enterElement, quadrant) {
@@ -283,7 +290,7 @@
                         });
                     if (isNewSpot(spot)) {
                         listElement.append('span')
-                            .attr('class', 'batch')
+                            .attr('class', 'badge_new')
                             .text('new');
                     }
                     return li;
@@ -369,6 +376,24 @@
                 appendLinkBarTo(descriptionDiv);
             }
 
+            function showQuadrantElements(quadrantId){
+
+                $("#items ul:not(#"+quadrantId+")").filter(function (index, element) {
+                    var e = $(element);
+                    if (e.css('display') !== 'none') {
+                        e.slideUp(200, 'swing');
+                    }
+                });
+
+                var containerToBeExpanded = $("#"+quadrantId);
+                if (containerToBeExpanded.css('display') === 'none') {
+                    containerToBeExpanded.slideDown(200, 'swing');
+                } else {
+                    containerToBeExpanded.slideUp(200, 'swing');
+                }
+
+            }
+
             function showDescriptionOf(spot) {
                 if(jQuery.isFunction(window.ga)){
                     // Trigger Google Analytics event if GA is included in index.html
@@ -387,7 +412,23 @@
                     }
                 });
 
-                var toBeExpanded = $('li#' + asId(spot.title) + ' .description');
+                var itemIdToBeExpanded ='li#' + asId(spot.title);
+
+                $("#items ul").filter(function (index, element) {
+                    var e = $(element);
+                    //Close panel if it is opened and new item to be expanded is not inside it
+                    if (e.css('display') !== 'none' && e.find(itemIdToBeExpanded).length === 0) {
+                        e.slideUp(200, 'swing');
+                    }
+                });
+
+                var toBeExpanded = $(itemIdToBeExpanded + ' .description');
+                var containerToBeExpanded = toBeExpanded.closest('ul');
+
+                if (containerToBeExpanded.css('display') === 'none') {
+                    containerToBeExpanded.slideDown(200, 'swing');
+                }
+
                 if (toBeExpanded.css('display') === 'none') {
                     toBeExpanded.slideDown(200, 'swing');
                 }
@@ -426,9 +467,7 @@
                 //remove tooltip
                 d3.select("#spotTooltip").style("visibility","hidden");
 
-                d3.selectAll(".label")
-                    .style('color', 'black')
-                    .style("font-weight", "100")
+                d3.selectAll(".label").classed("highlight fade", false)
                     .style("background-color", "white");
 
                 clearHistoricSpots();
@@ -476,13 +515,12 @@
                 toolTipGroup.style("visibility", "visible");
 
                 // ... fade out all list-entries
-                d3.selectAll("#items0 .label, #items1 .label").style('color', 'lightgrey');
+                d3.selectAll("#items .label").classed('fade', true);
 
                 // except the corresponding list-entry (which should also be highlighted)
-                d3.select("#items0 #" + asId(spot.title) + " .label, #items1 #" + asId(spot.title) + " .label")
-                    .style('font-weight', 'bold')
-                    .style('color', 'white')
-                    .style("background-color", "#6B8E23");
+                d3.select("#items #" + asId(spot.title) + " .label")
+                    .classed({'highlight': true, 'fade': false})
+                    .style("background-color", selectedSpot.style("fill"));
 
                 showHistoricSpots(spot);
             }

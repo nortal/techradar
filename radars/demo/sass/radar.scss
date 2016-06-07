@@ -1,3 +1,14 @@
+// Override variables
+/*
+
+$header_background_color: #009639;
+$label_highlight_background_color: #009639;
+
+*/
+// Radar styles import
+@import "app/sass/techradar.scss";
+
+//Custom styles for modified index.html
 $header_logo_path: '../images/schoeffm_avatar.png';
 
 #main-header {

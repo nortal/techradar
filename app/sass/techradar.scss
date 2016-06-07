@@ -1,8 +1,11 @@
 $color_orange: rgb(224, 129, 0);
 $color_light_orange: #ff8917;
 
-$break_xxl: 1477px;
-$break_xl: 1280px;
+$label_highlight_background_color: #6B8E23 !default;
+$badge_new_background_color: rgba(75, 137, 8, 0.5) !default;
+
+$break_xxl: 1477px !default;
+$break_xl: 1280px !default;
 
 body{
   margin:0;
@@ -65,39 +68,58 @@ body{
   }
 }  
 
-#items0, #items1 {
-  padding: 20px;
-  
+#items {
+  padding-top: 20px;
+  padding-left: 0.5em;
+  display: inline-block;
+  vertical-align: top;
+  width: 30em;
+
+
   a {
     color: $color_orange;
     text-decoration: none;
     font-weight: 400;
   }
-  
-  display: inline-block;
-  vertical-align: top;
-  padding-left: 1.5em;
+
   ul {
     margin-top: 0.5em;
     margin-left: -1em;
+    display: none; //hidden by default
   }
+
   .itemText {
     list-style-type: none;
     margin-left: -1em;
-    width: 21em;
     background-color: white;
     line-height: 1.5em;
     font-weight: 100;
+    cursor: pointer;
+
     .label {
-      .batch {
+      .badge_new {
         -webkit-border-radius: 2px;
         -moz-border-radius: 2px;
         border-radius: 2px;
         margin-left: 1em;
         padding: 0 5px 2px 5px;
-        background-color: rgba(75, 137, 8, 0.5);
+        background-color: $badge_new_background_color;
         color: white;
       }
+
+      &.highlight {
+        //background-color: $label_highlight_background_color;
+        font-weight: bold;
+        color: white;
+      }
+
+      &.fade {
+        color: lightgray;
+      }
+
+      color: black;
+      font-weight: 100;
+      background-color: white;
     }
     .description {
       border-top: 1px solid grey;
@@ -113,7 +135,10 @@ body{
   }
   
   .headline {
-    font-weight: 600;
+    font-weight: bold;
+    border-bottom-style: solid;
+    border-bottom-width: 2px;
+    cursor: pointer;
   }
 }
 

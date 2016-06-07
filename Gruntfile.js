@@ -7,7 +7,8 @@ module.exports = function (grunt) {
 
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
-        scss_sources: ['app/sass/techradar.scss', 'radars/'+radarName+'/sass/radar.scss' ],
+        // Radar specific scss imports app/sass/techradar.scss
+        scss_sources: [ 'radars/'+radarName+'/sass/radar.scss' ],
         js_view_sources: ['app/javascript/init.js', 'app/javascript/techradar.js' , 'radars/'+radarName+'/javascript/*.js'],
         image_sources: ['app/images/*', 'radars/'+radarName+'/images/*'],
         tests: ['test/javascript/**/*js'],
@@ -77,7 +78,7 @@ module.exports = function (grunt) {
         },
         watch: {
             all: {//This is default task
-                files: ['<%= js_view_sources %>', '<%= tests %>', '<%= scss_sources %>', 'radars/*.js'],
+                files: ['app/**/*', '<%= tests %>', 'radars/*.js'],
                 tasks: ['sass', 'jshint', 'mocha_phantomjs', 'concat'],
             options: {
                 'spawn': true,
@@ -190,6 +191,6 @@ module.exports = function (grunt) {
 
     grunt.registerTask('watchRadar', ['watch:radar']);
     grunt.registerTask('watchAll', ['watch:all']);
-    grunt.registerTask('dev', ['sass', 'jshint', 'concat', 'copy', 'watch:js']);
+    grunt.registerTask('dev', ['sass', 'jshint', 'concat', 'copy', 'watch:all']);
     grunt.registerTask('default', ['sass', 'jshint', 'mocha_phantomjs', 'concat', 'uglify', 'copy']);
 };
