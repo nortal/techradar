@@ -51,3 +51,6 @@ bower_components
 .settings
 .idea
 *.iml
+
+radars
+!radars/demo
