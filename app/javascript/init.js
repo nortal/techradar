@@ -8,6 +8,7 @@ $(document).ready(function () {
     new TechRadar(_.first(radar)).create();
 
     $(window).on('hashchange', de.bender.handleUrlHash);
+    de.bender.handleUrlHash();
 });
 
 
@@ -29,9 +30,8 @@ de.bender.clearStage = function() {
 };
 
 de.bender.handleUrlHash = function() {
-    var itemId =window.location.hash;
+    var itemId = window.location.hash;
     if(itemId) {
-        console.log(itemId);
         $(itemId + '.itemText div.label').click();
     }
 };
@@ -45,4 +45,5 @@ de.bender.showRadar = function(indexOfRadarToBeShown) {
 
     new TechRadar(de.bender.radars[indexOfRadarToBeShown]).create();
     $(window).on('hashchange', de.bender.handleUrlHash);
+    de.bender.handleUrlHash();
 };
