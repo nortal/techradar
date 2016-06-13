@@ -60,7 +60,7 @@
                         return "translate(" + center.x + "," + center.y + ")";
                     });
 
-                // creates all spots
+                // creates all spots for quadrant
                 createRadarSpots(enterElement, quadrant);
 
                 // write a head-line per quadrant
@@ -182,7 +182,12 @@
 
             function createRadarSpots(enterElement, quadrant) {
 
-                enterElement.append("circle")
+                var sortByRadius = function(a, b){
+                    // From Adopt to Hold
+                    return currentPlacementOf(a).coordinates.radius - currentPlacementOf(b).coordinates.radius;
+                };
+
+                enterElement.sort(sortByRadius).append("circle")
                     .attr("id", function (d) {
                         return asId(d.title);
                     })
