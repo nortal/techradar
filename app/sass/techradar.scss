@@ -73,8 +73,8 @@ body{
   padding-left: 0.5em;
   display: inline-block;
   vertical-align: top;
-  width: 30em;
-
+  // (radar width 680px) + (3 x padding of 20px)
+  width: calc(100% - 740px);
 
   a {
     color: $color_orange;
