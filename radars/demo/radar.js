@@ -1,3 +1,5 @@
+// Great selector to highlight elements with short or missing descriptions:
+// $('.description').filter(function(i, e){return $(e).text().length < 10}).closest('.itemText').find('.label').css('color', 'red')
 var radar = [
     {
         "id": 1,
