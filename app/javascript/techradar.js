@@ -39,33 +39,44 @@
             drawline(canvas, {x: center.x, y: center.y}, {x: center.x, y: center.y + max});
             drawline(canvas, {x: center.x, y: center.y}, {x: center.x - max, y: center.y});
             drawline(canvas, {x: center.x, y: center.y}, {x: center.x + max, y: center.y});
+
             drawArcLegend(canvas, this.radar.arcs.sort(sortByArcOrder));
 
             _.forEach(this.radar.quadrants, function (quadrant, quadrantIndex) {
-                // 1.) create all arcs for this quadrant
-                this.radar.arcs
-                    .sort(sortByArcOrder)
-                    .forEach(function (element, arcIndex) {
-                        drawQuadrantArc(group, radius, arcIndex, quadrantIndex, quadrant);
-                    });
+                // Counting up already drawn items for cross-radar indexing
+                var itemsDrawnCount = 0;
 
+                // Create all arcs for this quadrant
                 drawQuadrantLegend(group, quadrant, quadrantIndex, (this.radar.arcs.length - 1), radius);
 
-                var items = findItemsOf(this.radar.spots, quadrant);
-                var enterElement = canvas.selectAll('bogus')// join with sth. non-existent
-                    .data(items)
-                    .enter()
-                    .append("g")
-                    .attr("transform", function () {
-                        return "translate(" + center.x + "," + center.y + ")";
-                    });
-
-                // creates all spots for quadrant
-                createRadarSpots(enterElement, quadrant);
-
                 // write a head-line per quadrant
-                createListHeadline(quadrant);
-                createSpotLabelAndListElements(enterElement, quadrant);
+                createQuadrantHeadline(quadrant);
+
+                _.forEach(this.radar.arcs, function (arc, arcIndex) {
+                        drawQuadrantArc(group, radius, arcIndex, quadrantIndex, quadrant);
+
+                        var items = findItemsOf(this.radar.spots, quadrant, arc);
+
+                        var enterElement = canvas.selectAll('bogus')// join with sth. non-existent
+                            .data(items)
+                            .enter()
+                            .append("g")
+                            .attr("transform", function () {
+                                return "translate(" + center.x + "," + center.y + ")";
+                            });
+
+                        // creates all spots for quadrant
+                        createRadarSpots(enterElement, quadrant);
+
+                        createArcHeadline(quadrant, arc);
+                        createSpotLabelAndListElements(enterElement, quadrant, arc, itemsDrawnCount);
+
+                    itemsDrawnCount += items.length;
+                    }, this);
+
+
+
+
             }, this);
 
             renderHelp(canvas, this.radar);
@@ -75,10 +86,20 @@
                 return a.order - b.order;
             }
 
-            function findItemsOf(spots, quadrant) {
+            function findItemsOf(spots, quadrant, arc) {
                 return _.filter(spots, function (spot) {
                     var spotAngle = currentPlacementOf(spot).coordinates.angle;
-                    return quadrant.lowerAngle <= spotAngle && spotAngle < quadrant.upperAngle;
+
+                    var quadrantMatch = quadrant.lowerAngle <= spotAngle && spotAngle < quadrant.upperAngle;
+                    if(!quadrantMatch){
+                        //short circuit if not in quadrant
+                        return false;
+                    }
+
+                    var spotRadius = currentPlacementOf(spot).coordinates.radius;
+                    var arcUpperRadius = arc.order * radius;
+                    var arcLowerRadius = arcUpperRadius - radius + 1;
+                    return arcLowerRadius <= spotRadius && spotRadius <= arcUpperRadius;
                 });
             }
 
@@ -221,40 +242,55 @@
                 return _.camelCase(value);
             }
 
-            function createListHeadline(quadrant) {
+            function createQuadrantHeadline(quadrant) {
 
                 var quadrantId = asId(quadrant.title);
                 var headline = d3.select("#items").append("p");
 
                 headline.append("h3")
                     .text(quadrant.title)
-                    .classed('headline', true)
+                    .classed('headline quadrant', true)
                     .style("border-bottom-color", quadrant.spotColor)
                     .on('click', function () {
                         showQuadrantElements(quadrantId);
                     });
 
-                headline.append('ul')
-                    .attr("id", quadrantId);
-
+                headline.append("div")
+                    .attr("id", quadrantId)
+                    .classed('quadrantList', true);
             }
 
-            function createSpotLabelAndListElements(enterElement, quadrant) {
+            function createArcHeadline(quadrant, arc) {
+                var quadrantId = asId(quadrant.title);
+                var arcId = asId(arc.title);
+
+                var quadrantList = d3.select("div#"+quadrantId);
+
+                quadrantList.append("h5")
+                    .classed("headline arc", true)
+                    .text(arc.title);
+
+                quadrantList.append("ul")
+                    .attr("id", quadrantId+"_"+arcId);
+            }
+
+            function createSpotLabelAndListElements(enterElement, quadrant, arc, itemsDrawnCount) {
                 // write all label
+
                 enterElement.append('text')
                     .text(function (d, i) {
-                        createListElement((i + 1), quadrant.title, d);
-                        return (i + 1);
+                        createListElement((itemsDrawnCount+ i + 1), asId(quadrant.title)+"_"+asId(arc.title), d);
+                        return (itemsDrawnCount+ i + 1);
                     })
                     .attr("class", "spotLabel") //
                     .attr("x", function (d, i) {
-                        var xOffset = ((i < 9) ? 3 : 6);
+                        var xOffset = ((itemsDrawnCount+i < 9) ? 3 : 6);
                         return polar_to_cartesian2(
                                 currentPlacementOf(d).coordinates.radius,
                                 currentPlacementOf(d).coordinates.angle).x - xOffset;
                     }) //
                     .attr("y", function (d) {
-                        var yOffset = 4;
+                        var yOffset = 3;
                         return polar_to_cartesian2(
                                 currentPlacementOf(d).coordinates.radius,
                                 currentPlacementOf(d).coordinates.angle).y + yOffset;
@@ -277,10 +313,12 @@
                 }
 
                 function createListEntry() {
-                    var li = d3.select("ul#" + asId(listId))
+
+                    var li = d3.select("ul#" + listId)
                         .append("li")
                         .attr('class', 'itemText')
                         .attr("id", asId(spot.title));
+
                     var listElement = li.append("div")
                         .text(count + " " + spot.title)
                         .attr('class', 'label')
@@ -293,11 +331,13 @@
                         .on('click', function () {
                             showDescriptionOf(spot);
                         });
+
                     if (isNewSpot(spot)) {
                         listElement.append('span')
                             .attr('class', 'badge_new')
                             .text('new');
                     }
+
                     return li;
                 }
 
@@ -309,7 +349,7 @@
 
                     // again print the name of the spot as history-headline
                     historyBox.append('h2')
-                        .attr('class', 'headline')
+                        .classed('headline', true)
                         .text(spot.title)
                         .on('click', function () {
                             window.open(spot.url, '_blank');
@@ -383,7 +423,7 @@
 
             function showQuadrantElements(quadrantId){
 
-                $("#items ul:not(#"+quadrantId+")").filter(function (index, element) {
+                $("#items div:not(#"+quadrantId+").quadrantList").filter(function (index, element) {
                     var e = $(element);
                     if (e.css('display') !== 'none') {
                         e.slideUp(200, 'swing');
@@ -419,7 +459,7 @@
 
                 var itemIdToBeExpanded ='li#' + asId(spot.title);
 
-                $("#items ul").filter(function (index, element) {
+                $("#items div.quadrantList").filter(function (index, element) {
                     var e = $(element);
                     //Close panel if it is opened and new item to be expanded is not inside it
                     if (e.css('display') !== 'none' && e.find(itemIdToBeExpanded).length === 0) {
@@ -428,7 +468,7 @@
                 });
 
                 var toBeExpanded = $(itemIdToBeExpanded + ' .description');
-                var containerToBeExpanded = toBeExpanded.closest('ul');
+                var containerToBeExpanded = toBeExpanded.closest('.quadrantList');
 
                 if (containerToBeExpanded.css('display') === 'none') {
                     containerToBeExpanded.slideDown(200, 'swing');

@@ -85,6 +85,9 @@ body{
   ul {
     margin-top: 0.5em;
     margin-left: -1em;
+  }
+
+  .quadrantList {
     display: none; //hidden by default
   }
 
@@ -107,8 +110,17 @@ body{
         color: white;
       }
 
+      .badge_arc {
+        -webkit-border-radius: 2px;
+        -moz-border-radius: 2px;
+        border-radius: 2px;
+        margin-left: 1em;
+        padding: 0 5px 2px 5px;
+        background-color: $badge_new_background_color;
+        color: white;
+      }
+
       &.highlight {
-        //background-color: $label_highlight_background_color;
         font-weight: bold;
         color: white;
       }
@@ -127,19 +139,29 @@ body{
       margin: 0.5em 0.5em 0.5em 0.5em;
       padding: 1em 0 1em 0;
       line-height: 1.5em;
-      
+
       .linkbar {
         margin-top: 1em;
       }
     }
   }
-  
+
   .headline {
     font-weight: bold;
-    border-bottom-style: solid;
-    border-bottom-width: 2px;
     cursor: pointer;
+
+    &.quadrant {
+      border-bottom-style: solid;
+      border-bottom-width: 2px;
+    }
+
+    &.arc {
+      margin: 0px;
+      text-transform: uppercase;
+    }
   }
+
+
 }
 
 .description {
