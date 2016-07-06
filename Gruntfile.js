@@ -11,6 +11,7 @@ module.exports = function (grunt) {
         scss_sources: [ 'radars/'+radarName+'/sass/radar.scss' ],
         js_view_sources: ['app/javascript/init.js', 'app/javascript/techradar.js' , 'radars/'+radarName+'/javascript/*.js'],
         image_sources: ['app/images/*', 'radars/'+radarName+'/images/*'],
+        fonts_sources: ['radars/'+radarName+'/fonts/*'],
         tests: ['test/javascript/**/*js'],
         css_libs: [],
         view_libs: [
@@ -23,6 +24,7 @@ module.exports = function (grunt) {
         js_destination: distDir+'/js',
         css_destination: distDir+'/css',
         img_destination: distDir+'/images/',
+        fonts_destination: distDir+'/fonts/',
         jshint: {
             task: {
                 src: ['<%= js_view_sources %>'],
@@ -161,11 +163,20 @@ module.exports = function (grunt) {
         },
         //Copy images
         copy: {
-            files: {
+            main: {
+                files: [{
                 flatten: true,
                 expand: true,
                 dest: '<%= img_destination %>',
                 src: '<%= image_sources %>'
+                    },
+                    {
+                        flatten: true,
+                        expand: true,
+                        dest: '<%= fonts_destination %>',
+                        src: '<%= fonts_sources %>'
+                    }
+                ]
             }
         },
         mocha_phantomjs: {
@@ -191,6 +202,6 @@ module.exports = function (grunt) {
 
     grunt.registerTask('watchRadar', ['watch:radar']);
     grunt.registerTask('watchAll', ['watch:all']);
-    grunt.registerTask('dev', ['sass', 'jshint', 'concat', 'copy', 'watch:all']);
-    grunt.registerTask('default', ['sass', 'jshint', 'mocha_phantomjs', 'concat', 'uglify', 'copy']);
+    grunt.registerTask('dev', ['clean', 'sass', 'jshint', 'concat', 'copy', 'watch:all']);
+    grunt.registerTask('default', ['clean', 'sass', 'jshint', 'mocha_phantomjs', 'concat', 'uglify', 'copy']);
 };

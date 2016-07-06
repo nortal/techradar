@@ -127,31 +127,25 @@
             }
 
             function renderHelp(helpCanvas, radar) {
-                var animationSpeed = 200,
-                    iconRadius = 13,
-                    xPosition = 18, yPosition = 18;
-
-                function lowlightHelp() {
-                    helpCanvas.selectAll('text.helpLabel').remove();
-                    d3.select('.helpIcon').transition().ease('cubic-out').duration(animationSpeed).attr("r", iconRadius);
-                }
-
-                function highlightHelp() {
-                    helpCanvas.append('text').attr({
-                        'class': 'helpLabel',
-                        'dx': xPosition * 2,
-                        'dy': xPosition + 5
-                    }).text('Help');
-                    d3.select('.helpIcon').transition().ease('cubic-out').duration(animationSpeed).attr("r", iconRadius + 2);
-                }
 
                 function toggleHelp() {
                     $('#help').modal({
                         opacity: 60, autoResize: true, overlayClose: true, overlayCss: {backgroundColor: "#fff"},
+                        maxWidth: 780,
+                        position: [100, 0],
                         onOpen: function (dialog) {
                             dialog.overlay.fadeIn();
                             dialog.data.fadeIn();
                             dialog.container.fadeIn();
+                            document.getElementsByTagName('BODY')[0].classList = 'modal-open';
+                        },
+                        onClose: function(dialog) {
+                            dialog.overlay.fadeOut();
+                            dialog.data.fadeOut();
+                            dialog.container.fadeOut(function() {
+                                $.modal.close();
+                            });
+                            document.getElementsByTagName('BODY')[0].classList = '';
                         }
                     });
                 }
@@ -165,28 +159,10 @@
                     helpDiv.append('div').html(arc.description);
                 });
 
-                helpCanvas.append("circle")
-                    .attr({'class': 'helpIcon', "cx": xPosition, "cy": yPosition, "r": iconRadius})
-                    .on('mouseout', function () {
-                        lowlightHelp();
-                    })
-                    .on('mouseover', function () {
-                        highlightHelp();
-                    })
-                    .on('click', function () {
-                        toggleHelp();
-                    });
-
                 helpCanvas.append('text')
-                    .attr({'class': 'helpIcon', 'dx': yPosition - 4, 'dy': xPosition + 5})
-                    .text('?')
-                    .style({'stroke': 'black', 'font-weight': 100})
-                    .on('mouseout', function () {
-                        lowlightHelp();
-                    })
-                    .on('mouseover', function () {
-                        highlightHelp();
-                    })
+                    .attr({'class': 'helpIcon', 'dx': 0, 'dy': '99%'})
+                    .text('About TechRadar')
+                    .style({'fill': '#009639', 'font-weight': 100, 'stroke': 'none'})
                     .on('click', function () {
                         toggleHelp();
                     });
